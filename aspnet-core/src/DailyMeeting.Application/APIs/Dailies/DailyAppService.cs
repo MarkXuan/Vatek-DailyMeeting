@@ -22,10 +22,10 @@ namespace DailyMeeting.APIs.Dailies
         public async Task<DailyDto> Create(DailyDto input)
         {
             var isExist = await WorkScope.GetAll<Daily>().AnyAsync(s => s.Date == input.Date && s.ProjectId == input.ProjectId);
-            if (isExist)
-            {
-                throw new UserFriendlyException(string.Format("You have daily in this project"));
-            }
+            //if (isExist)
+            //{
+            //    throw new UserFriendlyException(string.Format("You have daily in this project"));
+            //}
             var daily = ObjectMapper.Map<Daily>(input);
             daily.UserId = AbpSession.UserId.Value;
             input.Id = await WorkScope.InsertAndGetIdAsync(daily);
@@ -35,12 +35,16 @@ namespace DailyMeeting.APIs.Dailies
         [HttpPut]
         public async Task<DailyDto> Update(DailyDto input)
         {
-            var isExist = await WorkScope.GetAll<Daily>().AnyAsync(s => s.Date == input.Date && s.ProjectId == input.ProjectId && s.Id != input.Id);
-            if (isExist)
-            {
-                throw new UserFriendlyException(string.Format("You have daily in this project"));
-            }
+            //var isExist = await WorkScope.GetAll<Daily>().AnyAsync(s => s.Date == input.Date && s.ProjectId == input.ProjectId && s.Id != input.Id);
+            //if (isExist)
+            //{
+            //    throw new UserFriendlyException(string.Format("You have daily in this project"));
+            //}
             var daily = await WorkScope.GetAsync<Daily>(input.Id);
+            if (daily == null)
+            {
+                throw new UserFriendlyException(string.Format("Your daily is not exist"));
+            }
             ObjectMapper.Map<DailyDto, Daily>(input, daily);
             await WorkScope.UpdateAsync(daily);
             return input;
@@ -52,7 +56,7 @@ namespace DailyMeeting.APIs.Dailies
             var daily = await WorkScope.GetAsync<Daily>(id);
             if (daily == null)
             {
-                throw new UserFriendlyException(string.Format("Not found daily"));
+                throw new UserFriendlyException(string.Format("Not found your daily"));
             }
             await WorkScope.DeleteAsync<Daily>(id);
         }
@@ -86,6 +90,7 @@ namespace DailyMeeting.APIs.Dailies
                     ProjectName = p.Key.ProjectName,
                     Details = p.Select(s => new DailyDetailDto
                     {
+                        Id = s.Id,
                         AvatarPath = s.AvatarPath,
                         Surname = s.Surname,
                         Name = s.Name,
